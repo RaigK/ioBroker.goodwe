@@ -1,0 +1,73 @@
+{
+  "common": {
+    "name": "goodwe",
+    "version": "0.1.0",
+    "news": {
+      "0.1.0": {
+        "en": "Initial release with Modbus TCP support for Goodwe ET series inverters",
+        "de": "Erste Version mit Modbus TCP Unterstützung für Goodwe ET-Serien-Wechselrichter"
+      }
+    },
+    "title": "Goodwe Inverter",
+    "titleLang": {
+      "en": "Goodwe Inverter (Modbus TCP)",
+      "de": "Goodwe Wechselrichter (Modbus TCP)"
+    },
+    "desc": {
+      "en": "Adapter for Goodwe inverters (GW10K-ET and ET/EH/BT series) via Modbus TCP. Reads PV production, battery, grid, and load data. Compatible with the Home Assistant goodwe integration.",
+      "de": "Adapter für Goodwe Wechselrichter (GW10K-ET und ET/EH/BT Serien) via Modbus TCP. Liest PV-Produktion, Batterie-, Netz- und Verbrauchsdaten. Kompatibel mit der Home Assistant goodwe Integration."
+    },
+    "icon": "admin/goodwe.png",
+    "extIcon": "https://raw.githubusercontent.com/iobroker-community/ioBroker.goodwe/main/admin/goodwe.png",
+    "authors": ["ioBroker Community"],
+    "keywords": ["goodwe", "inverter", "solar", "modbus", "battery", "energy"],
+    "license": "MIT",
+    "platform": "Javascript/Node.js",
+    "mode": "daemon",
+    "type": "energy",
+    "enabled": true,
+    "readme": "https://github.com/iobroker-community/ioBroker.goodwe/blob/main/README.md",
+    "loglevel": "info",
+    "supportStopInstance": true,
+    "allowInit": true,
+    "connectionType": "local",
+    "dataSource": "pull",
+    "logTransporter": false,
+    "compact": false,
+    "messagebox": false,
+    "adminUI": {
+      "config": "json"
+    }
+  },
+  "native": {
+    "host": "192.168.1.1",
+    "port": 502,
+    "unitId": 247,
+    "pollInterval": 30,
+    "timeout": 10
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Connection status",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
+}

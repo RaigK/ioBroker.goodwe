@@ -1,0 +1,50 @@
+{
+  "name": "iobroker.goodwe",
+  "version": "0.1.0",
+  "description": "ioBroker adapter for Goodwe inverters (GW10K-ET and compatible) via Modbus TCP",
+  "author": {
+    "name": "ioBroker Community",
+    "email": ""
+  },
+  "homepage": "https://github.com/iobroker-community/ioBroker.goodwe",
+  "license": "MIT",
+  "keywords": [
+    "ioBroker",
+    "goodwe",
+    "inverter",
+    "solar",
+    "modbus",
+    "photovoltaic",
+    "battery",
+    "energy"
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@iobroker/adapter-core": "^3.0.0",
+    "modbus-serial": "^8.0.19"
+  },
+  "devDependencies": {
+    "@iobroker/testing": "^4.1.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "main": "main.js",
+  "files": [
+    "admin/",
+    "lib/",
+    "io-package.json",
+    "main.js",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "mocha --timeout 10000 tests/",
+    "lint": "eslint ."
+  }
+}

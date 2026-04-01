@@ -1,0 +1,56 @@
+{
+  "type": "panel",
+  "items": {
+    "host": {
+      "type": "text",
+      "label": "Inverter IP Address",
+      "help": "IP address of your Goodwe inverter on the local network",
+      "placeholder": "192.168.1.1",
+      "sm": 12,
+      "md": 6
+    },
+    "port": {
+      "type": "number",
+      "label": "Modbus TCP Port",
+      "help": "Default Modbus port is 502",
+      "placeholder": "502",
+      "min": 1,
+      "max": 65535,
+      "sm": 12,
+      "md": 3
+    },
+    "unitId": {
+      "type": "number",
+      "label": "Modbus Unit ID (Slave ID)",
+      "help": "Goodwe ET series default: 247. Check your inverter's Modbus settings.",
+      "placeholder": "247",
+      "min": 1,
+      "max": 255,
+      "sm": 12,
+      "md": 3
+    },
+    "divider1": {
+      "type": "divider",
+      "sm": 12
+    },
+    "pollInterval": {
+      "type": "number",
+      "label": "Poll Interval (seconds)",
+      "help": "How often to read data from the inverter (minimum 10s recommended)",
+      "placeholder": "30",
+      "min": 10,
+      "max": 300,
+      "sm": 12,
+      "md": 6
+    },
+    "timeout": {
+      "type": "number",
+      "label": "Connection Timeout (seconds)",
+      "placeholder": "10",
+      "min": 3,
+      "max": 60,
+      "sm": 12,
+      "md": 6
+    }
+  }
+}
