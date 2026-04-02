@@ -136,47 +136,30 @@ class GoodweAdapter extends utils.Adapter {
     }
 
     async readAllRegisters() {
-        // Group registers by address range for efficient reading
-        const groups = this.groupRegistersByRange(REGISTERS);
+        // Lese die drei festen Blöcke exakt wie der HA-Adapter (et.py)
+        // Block 1: 35100–35224 (125 Register) – Haupt-Sensoren
+        // Block 2: 36000–36060 (60 Register)  – Meter
+        // Block 3: 37000–37024 (25 Register)  – BMS
+        const blocks = [
+            { start: 35100, count: 125, label: 'Haupt-Sensoren' },
+            { start: 36000, count: 60,  label: 'Meter' },
+            { start: 37000, count: 25,  label: 'BMS' },
+        ];
 
-        for (const group of groups) {
+        for (const block of blocks) {
+            const regsInBlock = Object.values(REGISTERS)
+                .filter(r => r.address >= block.start && r.address < block.start + block.count);
+            if (regsInBlock.length === 0) continue;
+
             try {
-                const result = await this.modbusClient.readHoldingRegisters(group.start, group.count);
-                await this.processRegisters(group.registers, result.data, group.start);
-                await this.sleep(200); // Delay between reads
+                this.log.debug(`Lese ${block.label} ab ${block.start} (${block.count} Register)`);
+                const result = await this.modbusClient.readHoldingRegisters(block.start, block.count);
+                await this.processRegisters(regsInBlock, result.data, block.start);
             } catch (err) {
-                this.log.warn(`Error reading registers ${group.start}-${group.start + group.count}: ${err.message}`);
+                this.log.warn(`Fehler beim Lesen ${block.label} (${block.start}): ${err.message}`);
             }
+            await this.sleep(300);
         }
-    }
-
-    groupRegistersByRange(registers, maxGap = 5) {
-        // Sort registers by address
-        const sorted = Object.entries(registers)
-            .map(([key, reg]) => ({ key, ...reg }))
-            .sort((a, b) => a.address - b.address);
-
-        const groups = [];
-        let currentGroup = null;
-
-        for (const reg of sorted) {
-            if (!currentGroup || reg.address > currentGroup.end + maxGap) {
-                currentGroup = {
-                    start: reg.address,
-                    end: reg.address + (reg.words || 1) - 1,
-                    count: reg.words || 1,
-                    registers: [reg],
-                };
-                groups.push(currentGroup);
-            } else {
-                const newEnd = reg.address + (reg.words || 1) - 1;
-                currentGroup.count = newEnd - currentGroup.start + 1;
-                currentGroup.end = newEnd;
-                currentGroup.registers.push(reg);
-            }
-        }
-
-        return groups;
     }
 
     async processRegisters(registers, data, startAddress) {
