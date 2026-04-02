@@ -143,14 +143,14 @@ class GoodweAdapter extends utils.Adapter {
             try {
                 const result = await this.modbusClient.readHoldingRegisters(group.start, group.count);
                 await this.processRegisters(group.registers, result.data, group.start);
-                await this.sleep(50); // Small delay between reads
+                await this.sleep(200); // Delay between reads
             } catch (err) {
                 this.log.warn(`Error reading registers ${group.start}-${group.start + group.count}: ${err.message}`);
             }
         }
     }
 
-    groupRegistersByRange(registers, maxGap = 10) {
+    groupRegistersByRange(registers, maxGap = 5) {
         // Sort registers by address
         const sorted = Object.entries(registers)
             .map(([key, reg]) => ({ key, ...reg }))
