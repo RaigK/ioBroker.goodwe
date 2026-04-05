@@ -74,6 +74,12 @@ class GoodweAdapter extends utils.Adapter {
             });
         }
 
+        await this.setObjectNotExistsAsync('pv.pv_sum', {
+            type: 'state',
+            common: { name: 'PV Gesamtleistung', type: 'number', role: 'value.power', unit: 'W', read: true, write: false },
+            native: {},
+        });
+
         this.log.info('Objects created successfully');
     }
 
@@ -123,6 +129,7 @@ class GoodweAdapter extends utils.Adapter {
 
         try {
             await this.readAllRegisters();
+            await this.calculateDerivedValues();
             this.setState('info.lastUpdate', new Date().toISOString(), true);
         } catch (err) {
             this.log.error(`Polling error: ${err.message}`);
@@ -198,9 +205,8 @@ class GoodweAdapter extends utils.Adapter {
         if (reg.dataType === 'int32') {
             const high = data[offset];
             const low = data[offset + 1] || 0;
-            let value = (high << 16) | low;
-            if (value & 0x80000000) value -= 0x100000000;
-            return value;
+            const unsigned = ((high << 16) | low) >>> 0;
+            return unsigned > 0x7FFFFFFF ? unsigned - 0x100000000 : unsigned;
         } else if (reg.dataType === 'uint32') {
             const high = data[offset];
             const low = data[offset + 1] || 0;
@@ -227,6 +233,14 @@ class GoodweAdapter extends utils.Adapter {
             // Default: uint16
             return data[offset];
         }
+    }
+
+    async calculateDerivedValues() {
+        const ppv1 = (await this.getStateAsync('pv.ppv1'))?.val || 0;
+        const ppv2 = (await this.getStateAsync('pv.ppv2'))?.val || 0;
+        const ppv3 = (await this.getStateAsync('pv.ppv3'))?.val || 0;
+        const ppv4 = (await this.getStateAsync('pv.ppv4'))?.val || 0;
+        await this.setStateAsync('pv.pv_sum', { val: ppv1 + ppv2 + ppv3 + ppv4, ack: true });
     }
 
     scheduleReconnect() {
@@ -256,6 +270,14 @@ class GoodweAdapter extends utils.Adapter {
         const regAddress = obj.native.register;
         const scale = obj.native.scale || 1;
         let value = state.val;
+
+        // Reverse-map state label strings (e.g. 'General Mode') back to numeric register values
+        if (obj.common.states && typeof value === 'string') {
+            const numericKey = Object.keys(obj.common.states).find(k => obj.common.states[k] === value);
+            if (numericKey !== undefined) {
+                value = parseInt(numericKey, 10);
+            }
+        }
 
         if (typeof value === 'number' && scale && scale !== 1) {
             value = Math.round(value / scale);
