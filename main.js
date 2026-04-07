@@ -26,6 +26,7 @@ class GoodweAdapter extends utils.Adapter {
         this.setState('info.connection', false, true);
 
         await this.createObjects();
+        this.subscribeStates('settings.*');
         await this.connect();
     }
 
