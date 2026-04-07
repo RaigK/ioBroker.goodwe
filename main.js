@@ -151,6 +151,7 @@ class GoodweAdapter extends utils.Adapter {
             { start: 35100, count: 125, label: 'Haupt-Sensoren' },
             { start: 36000, count: 60,  label: 'Meter' },
             { start: 37000, count: 25,  label: 'BMS' },
+            { start: 47511, count: 2,   label: 'EMS-Einstellungen' },
         ];
 
         for (const block of blocks) {

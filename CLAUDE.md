@@ -36,6 +36,12 @@ This is an **ioBroker adapter** for Goodwe solar inverters (ET/EH/BT series) tha
 
 Supported data types in `lib/registers.js`: `int16`, `uint16`, `int32`, `uint32`, `string`, `bit`. Scale factors (e.g. `0.1` for voltage in 0.1V units) are applied after decoding. State mappings (e.g. `{0: 'Normal', 1: 'Standby'}`) are used for mode/status registers and writable settings.
 
+**Important register conventions:**
+- `reg.key` is not set in register definitions — it is auto-injected at the bottom of `registers.js` via `for (const [key, reg] of Object.entries(REGISTERS)) { reg.key = key; }`. Tests verify this.
+- New registers must fall within one of the 3 fixed read blocks: 35100–35224, 36000–36059, 37000–37024. Registers outside these ranges will never be read.
+- Battery `ibattery1`/`pbattery1`: positive = charging, negative = discharging.
+- `pv.pv_sum` is a synthetic derived state (sum of ppv1–ppv4), not a Modbus register.
+
 ### ioBroker state object structure
 
 States are grouped under `goodwe.<instance>.<group>.<name>`:
@@ -46,6 +52,7 @@ States are grouped under `goodwe.<instance>.<group>.<name>`:
 - `backup` / `load` — EPS and household consumption
 - `meter` — energy counters (import/export, charge/discharge)
 - `bms` — battery management system data
+- `settings` — writable EMS/operation mode registers (e.g. `operation_mode`)
 
 ### Configuration (user-facing)
 
