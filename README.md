@@ -3,7 +3,7 @@
 [![NPM version](https://img.shields.io/npm/v/iobroker.goodwe.svg)](https://www.npmjs.com/package/iobroker.goodwe)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Adapter für **Goodwe** Wechselrichter (GW10K-ET und kompatible ET/EH/BT-Serien) über **Modbus TCP**. Vergleichbar mit der [goodwe Integration für Home Assistant](https://www.home-assistant.io/integrations/goodwe/).
+Adapter für **Goodwe** Wechselrichter (ET/EH/BT-Serien) über **Modbus TCP**. Portiert vom [goodwe Python-Adapter für Home Assistant](https://github.com/marcelblijleven/goodwe).
 
 ---
 
@@ -12,9 +12,7 @@ Adapter für **Goodwe** Wechselrichter (GW10K-ET und kompatible ET/EH/BT-Serien)
 | Modell | Serie | Status |
 |--------|-------|--------|
 | GW10K-ET | ET | ✅ Getestet |
-| GW5K-ET | ET | ✅ Kompatibel |
-| GW8K-ET | ET | ✅ Kompatibel |
-| GW6K-ET | ET | ✅ Kompatibel |
+| GW5K-ET / GW8K-ET / GW6K-ET | ET | ✅ Kompatibel |
 | GW10K-EH | EH | ⚠️ Kompatibel (evtl. abweichende Register) |
 | GW5000D-NS | NS | ❌ Nicht unterstützt (anderes Protokoll) |
 
@@ -23,27 +21,23 @@ Adapter für **Goodwe** Wechselrichter (GW10K-ET und kompatible ET/EH/BT-Serien)
 ## Voraussetzungen
 
 1. **Modbus TCP aktivieren** am Wechselrichter:  
-   → SEMS Portal → Gerät → Modbus-Einstellungen → TCP aktivieren  
-   → Alternativ über das Display: `Erweiterte Einstellungen > Kommunikation > Modbus TCP`
+   SEMS Portal → Gerät → Modbus-Einstellungen → TCP aktivieren  
+   oder: Display → `Erweiterte Einstellungen > Kommunikation > Modbus TCP`
 
-2. **IP-Adresse** des Wechselrichters im Heimnetzwerk (statische IP empfohlen)
+2. **Statische IP** für den Wechselrichter empfohlen (DHCP-Reservierung im Router)
 
-3. **Modbus Port**: 502 (Standard)
-
-4. **Unit ID / Slave ID**: 247 (Goodwe ET Standard)
+3. Modbus-Port **502**, Unit ID **247** (Goodwe ET Standard)
 
 ---
 
 ## Installation
 
 ```bash
-# Im ioBroker-Verzeichnis:
 cd /opt/iobroker
 npm install iobroker.goodwe
-
-# Oder über ioBroker Admin-Oberfläche:
-# Adapter → + → "goodwe" suchen → installieren
 ```
+
+Oder über die ioBroker Admin-Oberfläche: Adapter → + → „goodwe".
 
 ---
 
@@ -51,102 +45,114 @@ npm install iobroker.goodwe
 
 | Parameter | Standard | Beschreibung |
 |-----------|----------|--------------|
-| **IP-Adresse** | 192.168.1.1 | IP des Wechselrichters |
-| **Port** | 502 | Modbus TCP Port |
-| **Unit ID** | 247 | Modbus Slave ID (Goodwe ET: 247) |
-| **Poll-Intervall** | 30 | Abfrageintervall in Sekunden |
-| **Timeout** | 10 | Verbindungs-Timeout in Sekunden |
+| IP-Adresse | 192.168.1.1 | IP des Wechselrichters |
+| Port | 502 | Modbus TCP Port |
+| Unit ID | 247 | Modbus Slave ID (ET-Serie: 247) |
+| Poll-Intervall | 30 | Abfrageintervall in Sekunden |
+| Timeout | 10 | Verbindungs-Timeout in Sekunden |
 
 ---
 
 ## Datenpunkte
 
-### 📊 Inverter Info
+Alle Datenpunkte unter `goodwe.<instanz>.<gruppe>.<name>`.
+
+### info
+| Datenpunkt | Beschreibung |
+|------------|--------------|
+| `info.connection` | Verbindungsstatus (boolean) |
+| `info.lastUpdate` | Zeitstempel letztes erfolgreiches Poll |
+
+### ☀️ pv — Solaranlage
 | Datenpunkt | Beschreibung | Einheit |
 |------------|--------------|---------|
-| `inverter.serial_number` | Seriennummer | - |
-| `inverter.model_name` | Modellbezeichnung | - |
-| `inverter.rated_power` | Nennleistung | kW |
+| `pv.vpv1` … `pv.vpv4` | Spannung String 1–4 | V |
+| `pv.ipv1` … `pv.ipv4` | Strom String 1–4 | A |
+| `pv.ppv1` … `pv.ppv4` | Leistung String 1–4 | W |
+| `pv.pv_sum` | Gesamte PV-Leistung (berechnet) | W |
 
-### ☀️ PV (Solaranlage)
+### ⚡ grid — Netz
 | Datenpunkt | Beschreibung | Einheit |
 |------------|--------------|---------|
-| `pv.pv1_voltage` | PV-String 1 Spannung | V |
-| `pv.pv1_current` | PV-String 1 Strom | A |
-| `pv.pv1_power` | PV-String 1 Leistung | W |
-| `pv.pv2_voltage` | PV-String 2 Spannung | V |
-| `pv.pv2_current` | PV-String 2 Strom | A |
-| `pv.pv2_power` | PV-String 2 Leistung | W |
-| `pv.pv_power_total` | Gesamte PV-Leistung | W |
-| `pv.pv_energy_today` | PV-Ertrag heute | kWh |
-| `pv.pv_energy_total` | PV-Gesamtertrag | kWh |
+| `grid.vgrid` / `vgrid2` / `vgrid3` | Netzspannung L1–L3 | V |
+| `grid.igrid` / `igrid2` / `igrid3` | Netzstrom L1–L3 | A |
+| `grid.fgrid` / `fgrid2` / `fgrid3` | Netzfrequenz L1–L3 | Hz |
+| `grid.pgrid` / `pgrid2` / `pgrid3` | Netzleistung L1–L3 | W |
+| `grid.active_power` | Wirkleistung (+ Export / − Import) | W |
+| `grid.reactive_power` | Blindleistung | var |
+| `grid.apparent_power` | Scheinleistung | VA |
+| `grid.total_inverter_power` | Gesamtleistung Wechselrichter | W |
+| `grid.grid_mode` | Grid-Modus Code | - |
 
-### ⚡ Netz (Grid)
+### 🔋 battery — Batterie
 | Datenpunkt | Beschreibung | Einheit |
 |------------|--------------|---------|
-| `grid.grid_voltage_r` | Netzspannung L1 | V |
-| `grid.grid_current_r` | Netzstrom L1 | A |
-| `grid.grid_frequency` | Netzfrequenz | Hz |
-| `grid.grid_power` | Netzleistung (+ Export / - Import) | W |
-| `grid.meter_power` | Zählerleistung (CT-Klemme) | W |
-| `grid.grid_energy_export_today` | Einspeisung heute | kWh |
-| `grid.grid_energy_export_total` | Gesamteinspeisung | kWh |
-| `grid.grid_energy_import_today` | Bezug heute | kWh |
-| `grid.grid_energy_import_total` | Gesamtbezug | kWh |
+| `battery.vbattery1` | Batteriespannung | V |
+| `battery.ibattery1` | Batteriestrom (+ Laden / − Entladen) | A |
+| `battery.pbattery1` | Batterieleistung | W |
+| `battery.battery_mode` | Batterie-Modus (Normal/Standby/Charge/Discharge/…) | - |
 
-### 🔋 Batterie
+### 🔬 bms — Batterie-Management
 | Datenpunkt | Beschreibung | Einheit |
 |------------|--------------|---------|
-| `battery.battery_voltage` | Batteriespannung | V |
-| `battery.battery_current` | Batteriestrom (+ Laden / - Entladen) | A |
-| `battery.battery_power` | Batterieleistung | W |
-| `battery.battery_soc` | Ladezustand (SOC) | % |
-| `battery.battery_soh` | Gesundheitszustand (SOH) | % |
-| `battery.battery_temperature` | Batterietemperatur | °C |
-| `battery.battery_charge_today` | Geladen heute | kWh |
-| `battery.battery_discharge_today` | Entladen heute | kWh |
-| `battery.battery_cycles` | Ladezyklen | - |
+| `bms.battery_soc` | Ladezustand (SOC) | % |
+| `bms.battery_soh` | Gesundheitszustand (SOH) | % |
+| `bms.battery_temperature` | Batterietemperatur | °C |
+| `bms.battery_max_cell_temp` / `battery_min_cell_temp` | Zellen-Temp. max/min | °C |
+| `bms.battery_max_cell_voltage` / `battery_min_cell_voltage` | Zellen-Spannung max/min | V |
+| `bms.battery_charge_limit` / `battery_discharge_limit` | Lade-/Entlade-Limit | A |
+| `bms.battery_status` / `battery_error_l` / `battery_warning_l` | Status / Fehler / Warnung | - |
 
-### 🏠 Verbrauch (Load)
+### 🏠 load — Verbrauch
 | Datenpunkt | Beschreibung | Einheit |
 |------------|--------------|---------|
-| `load.load_power` | Hausverbrauch | W |
-| `load.backup_power` | EPS/Backup-Leistung | W |
-| `load.backup_voltage` | EPS-Spannung | V |
+| `load.load_p1` / `load_p2` / `load_p3` | Hausverbrauch L1–L3 | W |
+| `load.load_ptotal` | Hausverbrauch gesamt | W |
+| `load.ups_load` | UPS-Last | % |
 
-### ⚙️ Einstellungen (beschreibbar)
+### 🔌 backup — EPS/Backup
 | Datenpunkt | Beschreibung | Einheit |
 |------------|--------------|---------|
-| `settings.battery_reserve_soc` | Batterie-Reserve SOC | % |
-| `settings.battery_charge_soc_limit` | Lade-Limit SOC | % |
-| `settings.ac_charge_enabled` | AC-Laden aktiviert | boolean |
-| `settings.export_limit` | Einspeisebegrenzung | W |
-| `settings.power_mode` | Betriebsmodus | - |
-| `settings.charge_time1_start` | Ladezeit 1 Start (HHMM) | - |
-| `settings.charge_time1_stop` | Ladezeit 1 Ende (HHMM) | - |
+| `backup.backup_v1` / `v2` / `v3` | EPS-Spannung L1–L3 | V |
+| `backup.backup_p1` / `p2` / `p3` | EPS-Leistung L1–L3 | W |
+| `backup.backup_ptotal` | EPS-Gesamtleistung | W |
 
----
+### 📊 meter — Energiezähler
+| Datenpunkt | Beschreibung | Einheit |
+|------------|--------------|---------|
+| `meter.e_total` / `e_day` | PV-Ertrag gesamt / heute | kWh |
+| `meter.e_total_exp` / `e_day_exp` | Einspeisung gesamt / heute | kWh |
+| `meter.e_total_imp` / `e_day_imp` | Netzbezug gesamt / heute | kWh |
+| `meter.e_load_total` / `e_load_day` | Verbrauch gesamt / heute | kWh |
+| `meter.e_bat_charge_total` / `e_bat_charge_day` | Batterieladung gesamt / heute | kWh |
+| `meter.e_bat_discharge_total` / `e_bat_discharge_day` | Batterieentladung gesamt / heute | kWh |
+| `meter.active_power_total` | Zähler Wirkleistung (präzise) | W |
+| `meter.meter_freq` | Zählerfrequenz | Hz |
 
-## Netzwerk-Anforderungen
+### 🌡️ inverter — Wechselrichter-Info
+| Datenpunkt | Beschreibung | Einheit |
+|------------|--------------|---------|
+| `inverter.temperature` | Kühlkörpertemperatur | °C |
+| `inverter.temperature_air` / `temperature_module` | Luft- / Modultemperatur | °C |
+| `inverter.work_mode` | Betriebsmodus (Waiting/Normal/Error/Checking) | - |
+| `inverter.operation_mode` | Betriebsmodus-Code | - |
+| `inverter.warning_code` / `error_codes` | Warn-/Fehlercodes | - |
+| `inverter.h_total` | Betriebsstunden gesamt | h |
 
-- Der ioBroker-Server muss den Wechselrichter über TCP Port 502 erreichen können
-- Firewall-Regeln ggf. anpassen
-- Eine **statische IP** für den Wechselrichter wird empfohlen (DHCP-Reservierung im Router)
+### ⚙️ settings — Einstellungen (beschreibbar)
+| Datenpunkt | Beschreibung | Werte |
+|------------|--------------|-------|
+| `settings.ems_mode` | EMS-Modus | Auto (Self-use), Charge PV, Discharge PV, Import AC, Export AC, Conserve, Off Grid, Battery Standby, Buy Power, Sell Power, Charge Battery, Discharge Battery |
 
 ---
 
 ## Fehlerbehebung
 
 ### Verbindung schlägt fehl
-1. Prüfen ob Modbus TCP am Wechselrichter aktiviert ist
-2. IP-Adresse und Port prüfen: `telnet 192.168.1.x 502`
-3. Unit ID prüfen (Standard ET: 247)
-4. Firewall-Regeln prüfen
-
-### Falsche Werte
-- Unit ID falsch → alle Werte 0 oder Fehler
-- Falsches Modell → einzelne Register können abweichen
-- Den ioBroker-Log auf Warnungen prüfen
+1. Modbus TCP am Wechselrichter aktiviert?
+2. Erreichbarkeit prüfen: `telnet <ip> 502`
+3. Unit ID korrekt? (ET-Serie Standard: 247)
+4. ioBroker-Log auf Fehlermeldungen prüfen
 
 ### Adapter startet nicht
 ```bash
@@ -158,12 +164,16 @@ npm install --prefix node_modules/iobroker.goodwe
 
 ## Changelog
 
+### 0.1.1
+- Fix: `total_inverter_power` als `int16` dekodiert (war fälschlicherweise `int32`, lieferte Phantomwerte)
+- Fix: `ems_mode` (beschreibbar) auf korrektes Register 47511 verschoben; Modus-Werte korrigiert auf `EMSMode`-Enum (Off Grid = 7)
+- `operation_mode` (35188) ist schreibgeschützt und zeigt den Rohcode
+
 ### 0.1.0
 - Erste Version
 - Unterstützung ET-Serie (GW10K-ET)
-- Modbus TCP Verbindung mit Auto-Reconnect
-- PV, Netz, Batterie, Verbrauch Datenpunkte
-- Beschreibbare Einstellungsregister
+- Modbus TCP mit Auto-Reconnect (exponentieller Backoff, max. 10 Versuche)
+- PV, Netz, Batterie, Verbrauch, BMS, Zähler-Datenpunkte (~170 Register in 3 Blöcken)
 
 ---
 
