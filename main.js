@@ -151,6 +151,7 @@ class GoodweAdapter extends utils.Adapter {
             { start: 35100, count: 125, label: 'Haupt-Sensoren' },
             { start: 36000, count: 60,  label: 'Meter' },
             { start: 37000, count: 25,  label: 'BMS' },
+            { start: 47000, count: 1,   label: 'Betriebsmodus-Einstellung' },
             { start: 47511, count: 2,   label: 'EMS-Einstellungen' },
         ];
 
@@ -287,6 +288,18 @@ class GoodweAdapter extends utils.Adapter {
         try {
             await this.modbusClient.writeRegister(regAddress, value);
             this.log.info(`Written ${value} to register ${regAddress} (${shortId})`);
+
+            // Off Grid / Betriebsmodus: Neben Register 47000 noch Backup-Supply + Cold-Start setzen
+            if (shortId === 'settings.work_mode_set') {
+                if (value === 1) { // Off Grid
+                    await this.modbusClient.writeRegister(45252, 1); // backup_supply = on
+                    await this.modbusClient.writeRegister(45248, 4); // cold_start = 4
+                    this.log.info('Off Grid: backup_supply=1, cold_start=4 gesetzt');
+                } else {
+                    await this.modbusClient.writeRegister(45252, 0); // backup_supply = off
+                }
+            }
+
             await this.setStateAsync(shortId, { val: state.val, ack: true });
         } catch (err) {
             this.log.error(`Write failed for ${shortId}: ${err.message}`);
