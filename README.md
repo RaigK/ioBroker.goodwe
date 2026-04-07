@@ -140,9 +140,17 @@ Alle Datenpunkte unter `goodwe.<instanz>.<gruppe>.<name>`.
 | `inverter.h_total` | Betriebsstunden gesamt | h |
 
 ### ⚙️ settings — Einstellungen (beschreibbar)
+
 | Datenpunkt | Beschreibung | Werte |
 |------------|--------------|-------|
-| `settings.ems_mode` | EMS-Modus | Auto (Self-use), Charge PV, Discharge PV, Import AC, Export AC, Conserve, Off Grid, Battery Standby, Buy Power, Sell Power, Charge Battery, Discharge Battery |
+| `settings.work_mode_set` | **Betriebsmodus des Wechselrichters** | General Mode, Off Grid, Backup Mode, Eco Mode, Peak Shaving, Self Use |
+| `settings.ems_mode` | EMS-Batterie-Steuermodus (Feinsteuerung) | Auto (Self-use), Charge PV, Discharge PV, Import AC, Export AC, Conserve, Off Grid, Battery Standby, Buy Power, Sell Power, Charge Battery, Discharge Battery |
+
+**Hinweis `work_mode_set`:** Beim Wechsel in den Modus **Off Grid** werden automatisch zusätzliche Register gesetzt (Register 45252 `backup_supply` = 1, Register 45248 `cold_start` = 4), analog zur Home Assistant Goodwe-Integration. Beim Wechsel zurück in jeden anderen Modus wird `backup_supply` = 0 zurückgesetzt.
+
+**Unterschied `work_mode_set` vs. `ems_mode`:**  
+`work_mode_set` (47000) steuert den übergeordneten Wechselrichter-Betriebsmodus (On-Grid / Off-Grid / Backup / Eco).  
+`ems_mode` (47511) steuert das niederstufe EMS-Batterieverhalten innerhalb des aktuellen Modus.
 
 ---
 
@@ -164,9 +172,13 @@ npm install --prefix node_modules/iobroker.goodwe
 
 ## Changelog
 
+### 0.1.2
+- Fix: Schreiben auf States (`work_mode_set`, `ems_mode`) funktionierte nicht — `subscribeStates('settings.*')` fehlte in `onReady()`
+- Neu: `settings.work_mode_set` (Register 47000) — Betriebsmodus General/Off Grid/Backup/Eco/Peak Shaving/Self Use, analog zur HA-Integration; Off Grid setzt automatisch `backup_supply` und `cold_start`
+
 ### 0.1.1
 - Fix: `total_inverter_power` als `int16` dekodiert (war fälschlicherweise `int32`, lieferte Phantomwerte)
-- Fix: `ems_mode` (beschreibbar) auf korrektes Register 47511 verschoben; Modus-Werte korrigiert auf `EMSMode`-Enum (Off Grid = 7)
+- Fix: `ems_mode` auf korrektes Register 47511; Modus-Werte auf `EMSMode`-Enum korrigiert (Off Grid = 7)
 - `operation_mode` (35188) ist schreibgeschützt und zeigt den Rohcode
 
 ### 0.1.0
