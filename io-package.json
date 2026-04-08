@@ -14,8 +14,8 @@
       "de": "Goodwe Wechselrichter (Modbus TCP)"
     },
     "desc": {
-      "en": "Adapter for Goodwe inverters (GW10K-ET and ET/EH/BT series) via Modbus TCP. Reads PV production, battery, grid, and load data. Compatible with the Home Assistant goodwe integration.",
-      "de": "Adapter für Goodwe Wechselrichter (GW10K-ET und ET/EH/BT Serien) via Modbus TCP. Liest PV-Produktion, Batterie-, Netz- und Verbrauchsdaten. Kompatibel mit der Home Assistant goodwe Integration."
+      "en": "Adapter for Goodwe inverters (GW10K-ET and ET/EH/BT series) via Modbus TCP. Reads PV production, battery, grid, and load data.",
+      "de": "Adapter für Goodwe Wechselrichter (GW10K-ET und ET/EH/BT Serien) via Modbus TCP. Liest PV-Produktion, Batterie-, Netz- und Verbrauchsdaten."
     },
     "icon": "admin/goodwe.png",
     "extIcon": "https://raw.githubusercontent.com/iobroker-community/ioBroker.goodwe/main/admin/goodwe.png",

@@ -8,7 +8,8 @@
       "Bash(npx mocha:*)",
       "Bash(cmd.exe:*)",
       "Bash(echo \"exit: $?\")",
-      "Bash(node_modules/.bin/mocha:*)"
+      "Bash(node_modules/.bin/mocha:*)",
+      "Bash(git:*)"
     ]
   }
 }
