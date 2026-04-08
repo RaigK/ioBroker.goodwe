@@ -3,7 +3,12 @@
     "allow": [
       "Bash(ls:*)",
       "Bash(curl:*)",
-      "Bash(python3 -c \"import sys,json; [print\\(f['path']\\) for f in json.load\\(sys.stdin\\)['tree'] if f['path'].endswith\\('.py'\\)]\")"
+      "Bash(python3 -c \"import sys,json; [print\\(f['path']\\) for f in json.load\\(sys.stdin\\)['tree'] if f['path'].endswith\\('.py'\\)]\")",
+      "Bash(npm test:*)",
+      "Bash(npx mocha:*)",
+      "Bash(cmd.exe:*)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(node_modules/.bin/mocha:*)"
     ]
   }
 }

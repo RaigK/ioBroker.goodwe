@@ -21,7 +21,7 @@ This is an **ioBroker adapter** for Goodwe solar inverters (ET/EH/BT series) tha
 ### Key files
 
 - `main.js` — Core adapter class (extends `utils.Adapter`). Handles Modbus connection lifecycle, polling loop, register decoding, state management, and reconnect logic.
-- `lib/registers.js` — The complete Modbus register map: ~170 registers across 3 blocks (35100–35224, 36000–36060, 37000–37024). Each entry defines address, data type, unit, scale factor, and optional state mappings for writable registers.
+- `lib/registers.js` — The complete Modbus register map: ~170 registers across 5 blocks (35100–35224, 36000–36059, 37000–37024, 47000, 47511–47512). Each entry defines address, data type, unit, scale factor, and optional state mappings for writable registers.
 
 ### Adapter lifecycle
 
@@ -38,7 +38,7 @@ Supported data types in `lib/registers.js`: `int16`, `uint16`, `int32`, `uint32`
 
 **Important register conventions:**
 - `reg.key` is not set in register definitions — it is auto-injected at the bottom of `registers.js` via `for (const [key, reg] of Object.entries(REGISTERS)) { reg.key = key; }`. Tests verify this.
-- New registers must fall within one of the 3 fixed read blocks: 35100–35224, 36000–36059, 37000–37024. Registers outside these ranges will never be read.
+- New registers must fall within one of the 5 fixed read blocks: 35100–35224 (main sensors), 36000–36059 (meter), 37000–37024 (BMS), 47000 (operation mode), 47511–47512 (EMS settings). Registers outside these ranges will never be read.
 - Battery `ibattery1`/`pbattery1`: positive = charging, negative = discharging.
 - `pv.pv_sum` is a synthetic derived state (sum of ppv1–ppv4), not a Modbus register.
 
