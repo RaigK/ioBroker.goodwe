@@ -1,6 +1,18 @@
 {
   "type": "panel",
   "items": {
+    "protocol": {
+      "type": "select",
+      "label": "Communication Protocol",
+      "help": "TCP: LAN-Kit / Ezlink3000 dongles (port 502). UDP 8899: old Wi-Fi-Kit (SSID 'Solar-WiFi…'). Pick UDP if Modbus TCP is not exposed by your dongle.",
+      "options": [
+        { "label": "Modbus TCP (LAN-Kit / Ezlink3000)", "value": "tcp" },
+        { "label": "UDP 8899 (old Wi-Fi-Kit)", "value": "udp" }
+      ],
+      "default": "tcp",
+      "sm": 12,
+      "md": 6
+    },
     "host": {
       "type": "text",
       "label": "Inverter IP Address",
@@ -11,8 +23,8 @@
     },
     "port": {
       "type": "number",
-      "label": "Modbus TCP Port",
-      "help": "Default Modbus port is 502",
+      "label": "Port",
+      "help": "Modbus TCP default: 502. UDP Wi-Fi-Kit default: 8899. Leave empty for protocol default.",
       "placeholder": "502",
       "min": 1,
       "max": 65535,

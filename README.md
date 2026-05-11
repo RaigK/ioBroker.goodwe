@@ -45,11 +45,14 @@ Oder über die ioBroker Admin-Oberfläche: Adapter → + → „goodwe".
 
 | Parameter | Standard | Beschreibung |
 |-----------|----------|--------------|
+| Protokoll | tcp | `tcp` = Modbus TCP (LAN-Kit / Ezlink3000). `udp` = UDP 8899 für alte Wi-Fi-Kit Dongles (SSID `Solar-WiFi…`) |
 | IP-Adresse | 192.168.1.1 | IP des Wechselrichters |
-| Port | 502 | Modbus TCP Port |
+| Port | 502 / 8899 | Modbus TCP = 502, UDP Wi-Fi-Kit = 8899 |
 | Unit ID | 247 | Modbus Slave ID (ET-Serie: 247) |
 | Poll-Intervall | 30 | Abfrageintervall in Sekunden |
 | Timeout | 10 | Verbindungs-Timeout in Sekunden |
+
+**Welches Protokoll?** Wenn `Test-NetConnection <IP> -Port 502` `TcpTestSucceeded: True` zurückliefert, nutze `tcp`. Liefert nur das alte Wi-Fi-Kit (Web-UI auf Port 80, SSID `Solar-WiFi…`) keinen Port 502, nutze `udp`. Das Wi-Fi-Kit arbeitet als transparente Serial-über-UDP-Brücke auf Port 8899 — die Adapter-Logik (Register-Map, Schreibvorgänge) bleibt identisch.
 
 ---
 
@@ -171,6 +174,13 @@ npm install --prefix node_modules/iobroker.goodwe
 ---
 
 ## Changelog
+
+### 0.2.0
+- Neu: UDP 8899 Transport für alte Goodwe Wi-Fi-Kit Dongles, die kein Modbus TCP anbieten (SSID `Solar-WiFi…`). Auswahl über neues Konfigurationsfeld `Protokoll`. Bestehende TCP-Setups unverändert.
+- Register-Map und Schreibverhalten (inkl. Off-Grid Cross-Register-Schreibvorgängen) sind transport-agnostisch — beide Transports nutzen identische Modbus-RTU/TCP-Frames.
+
+### 0.1.3
+- Doku: Nicht offensichtliche Adapter-Konventionen in `CLAUDE.md` erfasst (Off-Grid Cross-Register-Schreibvorgänge, `work_mode_set` vs `ems_mode`-Schichtung, erforderliches `settings.*` Abonnement, synthetische Nicht-Register-States, Node `>=18` Engine-Pin)
 
 ### 0.1.2
 - Fix: Schreiben auf States (`work_mode_set`, `ems_mode`) funktionierte nicht — `subscribeStates('settings.*')` fehlte in `onReady()`

@@ -2,6 +2,7 @@
 
 const utils = require('@iobroker/adapter-core');
 const ModbusRTU = require('modbus-serial');
+const { GoodweUdpClient } = require('./lib/transport-udp');
 const { REGISTERS, REGISTER_GROUPS } = require('./lib/registers');
 
 class GoodweAdapter extends utils.Adapter {
@@ -89,16 +90,23 @@ class GoodweAdapter extends utils.Adapter {
             try { this.modbusClient.close(); } catch (e) { /* ignore */ }
         }
 
-        this.modbusClient = new ModbusRTU();
+        const protocol = (this.config.protocol || 'tcp').toLowerCase();
         const host = this.config.host || '192.168.1.1';
-        const port = this.config.port || 502;
+        const defaultPort = protocol === 'udp' ? 8899 : 502;
+        const port = this.config.port || defaultPort;
         const unitId = this.config.unitId || 247;
         const timeout = (this.config.timeout || 10) * 1000;
 
-        this.log.info(`Connecting to Goodwe inverter at ${host}:${port} (Unit ID: ${unitId})`);
+        this.log.info(`Connecting to Goodwe inverter at ${host}:${port} via ${protocol.toUpperCase()} (Unit ID: ${unitId})`);
 
         try {
-            await this.modbusClient.connectTCP(host, { port });
+            if (protocol === 'udp') {
+                this.modbusClient = new GoodweUdpClient();
+                await this.modbusClient.connectUDP(host, { port });
+            } else {
+                this.modbusClient = new ModbusRTU();
+                await this.modbusClient.connectTCP(host, { port });
+            }
             this.modbusClient.setID(unitId);
             this.modbusClient.setTimeout(timeout);
 

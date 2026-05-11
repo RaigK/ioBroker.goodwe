@@ -22,8 +22,17 @@ This is an **ioBroker adapter** for Goodwe solar inverters (ET/EH/BT series) tha
 
 ### Key files
 
-- `main.js` — Core adapter class (extends `utils.Adapter`). Handles Modbus connection lifecycle, polling loop, register decoding, state management, and reconnect logic.
+- `main.js` — Core adapter class (extends `utils.Adapter`). Handles transport lifecycle, polling loop, register decoding, state management, and reconnect logic.
 - `lib/registers.js` — The complete Modbus register map: ~170 registers across 5 blocks (35100–35224, 36000–36059, 37000–37024, 47000, 47511–47512). Each entry defines address, data type, unit, scale factor, and optional state mappings for writable registers.
+- `lib/transport-udp.js` — UDP-8899 transport for the old Goodwe Wi-Fi-Kit dongles. Raw Modbus RTU frames over UDP (no AA55 envelope). Exposes the same surface as `modbus-serial`'s `ModbusRTU` (`connectUDP`, `setID`, `setTimeout`, `readHoldingRegisters`, `writeRegister`, `writeRegisters`, `close`) so `main.js` can swap clients via config without branching the read/write code.
+
+### Transport selection
+
+`config.protocol` picks the transport at connect time:
+- `tcp` (default) → `modbus-serial`'s `ModbusRTU` over TCP port 502. For LAN-Kit / Ezlink3000.
+- `udp` → `GoodweUdpClient` over UDP port 8899. For the old Wi-Fi-Kit (web UI with `Solar-WiFi…` SSID, no Modbus TCP).
+
+The Wi-Fi-Kit is a transparent serial-over-UDP bridge. Wire format on UDP is standard Modbus RTU with one quirk: the gateway prepends a **2-byte prefix** to inbound frames that the request doesn't have. `parseResponse` strips it; CRC16 is computed over `data[2:-2]`. Test vectors and the prefix-stripping logic live in `tests/transport-udp.test.js`.
 
 ### Adapter lifecycle
 
@@ -68,8 +77,9 @@ States are grouped under `goodwe.<instance>.<group>.<name>`:
 ### Configuration (user-facing)
 
 Defined in `admin/jsonConfig.json` and `io-package.json`:
+- `protocol` — `tcp` (default) or `udp`. See Transport selection above.
 - `host` — inverter IP (default `192.168.1.1`)
-- `port` — Modbus TCP port (default `502`)
+- `port` — TCP 502 / UDP 8899 (transport-dependent default)
 - `unitId` — Modbus unit ID (default `247` for Goodwe ET)
 - `pollInterval` — seconds between polls (default `30`)
 - `timeout` — Modbus request timeout in seconds (default `10`)
