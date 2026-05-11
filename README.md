@@ -175,6 +175,9 @@ npm install --prefix node_modules/iobroker.goodwe
 
 ## Changelog
 
+### 0.2.1
+- UDP 8899 Transport End-to-End gegen einen GW10K-ET mit altem Wi-Fi-Kit Dongle (Firmware V1.0.3.8) verifiziert. Alle States werden befüllt; keine Code-Änderungen gegenüber 0.2.0.
+
 ### 0.2.0
 - Neu: UDP 8899 Transport für alte Goodwe Wi-Fi-Kit Dongles, die kein Modbus TCP anbieten (SSID `Solar-WiFi…`). Auswahl über neues Konfigurationsfeld `Protokoll`. Bestehende TCP-Setups unverändert.
 - Register-Map und Schreibverhalten (inkl. Off-Grid Cross-Register-Schreibvorgängen) sind transport-agnostisch — beide Transports nutzen identische Modbus-RTU/TCP-Frames.

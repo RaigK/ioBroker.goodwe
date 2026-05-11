@@ -1,8 +1,12 @@
 {
   "common": {
     "name": "goodwe",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "news": {
+      "0.2.1": {
+        "en": "UDP 8899 transport verified end-to-end against a live GW10K-ET with the old Wi-Fi-Kit dongle (firmware V1.0.3.8). All states populate; no code changes since 0.2.0.",
+        "de": "UDP 8899 Transport End-to-End gegen einen GW10K-ET mit altem Wi-Fi-Kit Dongle (Firmware V1.0.3.8) verifiziert. Alle States werden befüllt; keine Code-Änderungen gegenüber 0.2.0."
+      },
       "0.2.0": {
         "en": "New: UDP 8899 transport for old Goodwe Wi-Fi-Kit dongles that don't expose Modbus TCP. Pick transport via new 'protocol' config field (tcp / udp). Existing TCP setups unchanged.",
         "de": "Neu: UDP 8899 Transport für alte Goodwe Wi-Fi-Kit Dongles ohne Modbus TCP. Auswahl über neues Konfigurationsfeld 'protocol' (tcp / udp). Bestehende TCP-Setups unverändert."

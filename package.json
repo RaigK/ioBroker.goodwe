@@ -1,6 +1,6 @@
 {
   "name": "iobroker.goodwe",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "ioBroker adapter for Goodwe inverters (GW10K-ET and compatible) via Modbus TCP",
   "author": {
     "name": "ioBroker Community",
