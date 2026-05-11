@@ -14,6 +14,8 @@ To run a single test file:
 npx mocha tests/register.test.js --timeout 10000
 ```
 
+Node `>=18` is required (pinned in `package.json` `engines`). Test/lint failures on older Node are not bugs in the adapter.
+
 ## Architecture
 
 This is an **ioBroker adapter** for Goodwe solar inverters (ET/EH/BT series) that communicates via **Modbus TCP**. It runs as a daemon process, polling the inverter at a configurable interval and exposing all values as ioBroker state objects.
@@ -25,12 +27,14 @@ This is an **ioBroker adapter** for Goodwe solar inverters (ET/EH/BT series) tha
 
 ### Adapter lifecycle
 
-1. `onReady()` → create ioBroker objects from register map → connect to inverter
+1. `onReady()` → create ioBroker objects from register map → `subscribeStates('settings.*')` → connect to inverter
 2. Connection established → start polling loop
-3. Each poll → read 3 register blocks (300ms delay between each) → decode all registers → update states
+3. Each poll → read 3 sensor blocks (35100–35224, 36000–36059, 37000–37024) with 300ms delay between each → decode all registers → update states
 4. User writes to a writable state → convert value → write to Modbus register
 5. Connection lost → exponential backoff reconnect (max 10 attempts)
 6. `onUnload()` → clear timers, close Modbus connection
+
+**Writable-state subscription is required and explicit.** Without `subscribeStates('settings.*')` in `onReady()`, `onStateChange` never fires for user writes (real bug fixed in 0.1.2). Any new writable group outside `settings` needs its own `subscribeStates` call.
 
 ### Register decoding
 
@@ -38,9 +42,16 @@ Supported data types in `lib/registers.js`: `int16`, `uint16`, `int32`, `uint32`
 
 **Important register conventions:**
 - `reg.key` is not set in register definitions — it is auto-injected at the bottom of `registers.js` via `for (const [key, reg] of Object.entries(REGISTERS)) { reg.key = key; }`. Tests verify this.
-- New registers must fall within one of the 5 fixed read blocks: 35100–35224 (main sensors), 36000–36059 (meter), 37000–37024 (BMS), 47000 (operation mode), 47511–47512 (EMS settings). Registers outside these ranges will never be read.
+- Five register ranges are in use: 35100–35224 (main sensors), 36000–36059 (meter), 37000–37024 (BMS), 47000 (operation mode), 47511–47512 (EMS settings). The poll loop reads only the first three (sensor blocks); 47000 and 47511–47512 are writable-only and read on demand. Registers outside these ranges will never be touched.
 - Battery `ibattery1`/`pbattery1`: positive = charging, negative = discharging.
-- `pv.pv_sum` is a synthetic derived state (sum of ppv1–ppv4), not a Modbus register.
+- Synthetic (non-register) states created directly in `createObjects()`: `pv.pv_sum` (sum of ppv1–ppv4), `info.connection`, `info.lastUpdate`, `info.firmwareVersion`. Don't look for these in `REGISTERS`.
+
+**`work_mode_set` (47000) Off Grid side-effects.** Writing `settings.work_mode_set = Off Grid` auto-writes two additional registers: 45252 `backup_supply = 1` and 45248 `cold_start = 4`. Switching back to any other mode resets `backup_supply = 0`. This mirrors the Home Assistant Goodwe integration. Any refactor of the write path must preserve these cross-register writes.
+
+**`work_mode_set` vs `ems_mode` — independent layered controls, not aliases.**
+- `work_mode_set` (47000) = high-level inverter mode (General / Off Grid / Backup / Eco / Peak Shaving / Self Use).
+- `ems_mode` (47511) = low-level EMS battery behavior *within* the current work mode (Auto, Charge PV, Discharge PV, Import AC, Export AC, etc.).
+They are separate registers controlling different layers; setting one does not imply the other.
 
 ### ioBroker state object structure
 
